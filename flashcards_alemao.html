@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcards de Alemão para Iniciantes</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --light-color: #f8f9fa;
+            --hover-color: #e3f2fd;
+            --border-color: #e9ecef;
+            --text-color: #333;
+            --text-secondary: #6c757d;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+        
+        header h1 {
+            color: var(--secondary-color);
+            font-size: 2.2rem;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .category-selector {
+            flex-grow: 1;
+            max-width: 300px;
+        }
+        
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 16px;
+            background-color: white;
+        }
+        
+        .mode-toggle {
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .flashcard-container {
+            perspective: 1000px;
+            margin: 30px auto;
+            max-width: 600px;
+        }
+        
+        .flashcard {
+            width: 100%;
+            height: 300px;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .card-front {
+            background-color: white;
+            border: 2px solid var(--primary-color);
+        }
+        
+        .card-back {
+            background-color: var(--hover-color);
+            border: 2px solid var(--primary-color);
+            transform: rotateY(180deg);
+        }
+        
+        .card-content {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .card-hint {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+        
+        .card-counter {
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+        }
+        
+        .quiz-mode {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .quiz-input {
+            width: 100%;
+            max-width: 500px;
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .quiz-input input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+        
+        .feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .results {
+            display: none;
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: var(--hover-color);
+            border: 10px solid var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+        }
+        
+        .score-percentage {
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 14px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .category-selector {
+                max-width: none;
+            }
+            
+            .flashcard {
+                height: 250px;
+            }
+            
+            .card-content {
+                font-size: 20px;
+            }
+            
+            .quiz-input {
+                flex-direction: column;
+            }
+            
+            .navigation {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Flashcards de Alemão para Iniciantes</h1>
+        </header>
+        
+        <div class="controls">
+            <div class="category-selector">
+                <select id="category-select">
+                    <option value="">Selecione uma categoria</option>
+                </select>
+            </div>
+            
+            <div class="mode-toggle">
+                <button id="study-mode-btn" disabled>Modo Estudo</button>
+                <button id="quiz-mode-btn" disabled>Modo Quiz</button>
+            </div>
+        </div>
+        
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        
+        <div class="card-counter" id="card-counter"></div>
+        
+        <div class="flashcard-container">
+            <div class="flashcard" id="flashcard">
+                <div class="card-front">
+                    <div class="card-content" id="front-content">
+                        Selecione uma categoria para começar
+                    </div>
+                    <div class="card-hint">Clique para virar</div>
+                </div>
+                <div class="card-back">
+                    <div class="card-content" id="back-content"></div>
+                    <div class="card-hint">Clique para virar</div>
+                </div>
+            </div>
+            
+            <div class="quiz-mode" id="quiz-mode">
+                <div class="card-content" id="quiz-question"></div>
+                <div class="quiz-input">
+                    <input type="text" id="quiz-answer" placeholder="Digite sua resposta em alemão">
+                    <button id="check-answer-btn">Verificar</button>
+                </div>
+                <div class="feedback" id="feedback"></div>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button id="prev-btn" disabled>Anterior</button>
+            <button id="next-btn" disabled>Próximo</button>
+        </div>
+        
+        <div class="results" id="results">
+            <h2>Resultados do Quiz</h2>
+            <div class="score-circle">
+                <span class="score-percentage" id="score-percentage">0%</span>
+            </div>
+            <p id="score-text">Você acertou 0 de 0 cartões</p>
+            <button id="review-btn">Revisar Cartões Errados</button>
+            <button id="restart-btn">Reiniciar</button>
+        </div>
+        
+        <footer>
+            <p>Desenvolvido para ajudar na prática de alemão para iniciantes</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Dados dos flashcards
+        const flashcardsData = {
+          categories: [
+            {
+              id: "saudacoes",
+              name: "Saudações",
+              cards: [
+                { front: "Bom dia", back: "Guten Morgen" },
+                { front: "Boa tarde", back: "Guten Tag" },
+                { front: "Boa noite", back: "Guten Abend" },
+                { front: "Até logo (formal)", back: "Auf Wiedersehen" },
+                { front: "Tchau (informal)", back: "Tschüss" },
+                { front: "Olá", back: "Hallo" }
+              ]
+            },
+            {
+              id: "apresentacoes",
+              name: "Apresentações",
+              cards: [
+                { front: "Meu nome é...", back: "Ich heiße... / Mein Name ist..." },
+                { front: "Como você se chama? (informal)", back: "Wie heißt du?" },
+                { front: "Como o senhor/a senhora se chama? (formal)", back: "Wie heißen Sie?" },
+                { front: "Prazer em conhecê-lo!", back: "Schön, dich kennenzulernen! / Freut mich!" },
+                { front: "De onde você é?", back: "Woher kommst du?" },
+                { front: "Eu sou do Brasil", back: "Ich komme aus Brasilien" }
+              ]
+            },
+            {
+              id: "verbos_sein",
+              name: "Verbo Sein (Ser/Estar)",
+              cards: [
+                { front: "Eu sou/estou (sein)", back: "Ich bin" },
+                { front: "Você é/está (informal) (sein)", back: "Du bist" },
+                { front: "Ele/Ela/Isso é/está (sein)", back: "Er/Sie/Es ist" },
+                { front: "Nós somos/estamos (sein)", back: "Wir sind" },
+                { front: "Vocês são/estão (informal) (sein)", back: "Ihr seid" },
+                { front: "Vocês são/estão (formal) / Eles/Elas são/estão (sein)", back: "Sie/sie sind" }
+              ]
+            },
+            {
+              id: "verbos_haben",
+              name: "Verbo Haben (Ter)",
+              cards: [
+                { front: "Eu tenho (haben)", back: "Ich habe" },
+                { front: "Você tem (informal) (haben)", back: "Du hast" },
+                { front: "Ele/Ela/Isso tem (haben)", back: "Er/Sie/Es hat" },
+                { front: "Nós temos (haben)", back: "Wir haben" },
+                { front: "Vocês têm (informal) (haben)", back: "Ihr habt" },
+                { front: "Vocês têm (formal) / Eles/Elas têm (haben)", back: "Sie/sie haben" }
+              ]
+            },
+            {
+              id: "numeros",
+              name: "Números",
+              cards: [
+                { front: "0", back: "Null" },
+                { front: "1", back: "Eins" },
+                { front: "2", back: "Zwei" },
+                { front: "3", back: "Drei" },
+                { front: "4", back: "Vier" },
+                { front: "5", back: "Fünf" },
+                { front: "6", back: "Sechs" },
+                { front: "7", back: "Sieben" },
+                { front: "8", back: "Acht" },
+                { front: "9", back: "Neun" },
+                { front: "10", back: "Zehn" },
+                { front: "11", back: "Elf" },
+                { front: "12", back: "Zwölf" },
+                { front: "20", back: "Zwanzig" },
+                { front: "23", back: "Dreiundzwanzig" },
+                { front: "30", back: "Dreißig" }
+              ]
+            },
+            {
+              id: "artigos",
+              name: "Artigos",
+              cards: [
+                { front: "O (masculino)", back: "der" },
+                { front: "A (feminino)", back: "die" },
+                { front: "O/A (neutro)", back: "das" },
+                { front: "Um (masculino/neutro)", back: "ein" },
+                { front: "Uma (feminino)", back: "eine" },
+                { front: "der Mann", back: "o homem" },
+                { front: "die Frau", back: "a mulher" },
+                { front: "das Kind", back: "a criança" },
+                { front: "das Buch", back: "o livro" },
+                { front: "der Tisch", back: "a mesa" },
+                { front: "die Tasche", back: "a bolsa" }
+              ]
+            },
+            {
+              id: "frases_uteis",
+              name: "Frases Úteis",
+              cards: [
+                { front: "Obrigado", back: "Danke" },
+                { front: "Muito obrigado", back: "Vielen Dank" },
+                { front: "De nada", back: "Bitte / Gern geschehen" },
+                { front: "Por favor", back: "Bitte" },
+                { front: "Desculpe", back: "Entschuldigung" },
+                { front: "Sinto muito", back: "Es tut mir leid" },
+                { front: "Não entendo", back: "Ich verstehe nicht" },
+                { front: "Pode falar mais devagar, por favor?", back: "Können Sie bitte langsamer sprechen?" },
+                { front: "A conta, por favor", back: "Die Rechnung, bitte" },
+                { front: "Quanto custa isso?", back: "Wie viel kostet das?" }
+              ]
+            },
+            {
+              id: "familia",
+              name: "Família",
+              cards: [
+                { front: "a família", back: "die Familie" },
+                { front: "os pais", back: "die Eltern" },
+                { front: "o pai", back: "der Vater" },
+                { front: "a mãe", back: "die Mutter" },
+                { front: "o irmão", back: "der Bruder" },
+                { front: "a irmã", back: "die Schwester" },
+                { front: "os avós", back: "die Großeltern" },
+                { front: "o avô", back: "der Großvater" },
+                { front: "a avó", back: "die Großmutter" },
+                { front: "o filho", back: "der Sohn" },
+                { front: "a filha", back: "die Tochter" },
+                { front: "o tio", back: "der Onkel" },
+                { front: "a tia", back: "die Tante" },
+                { front: "o primo", back: "der Cousin" },
+                { front: "a prima", back: "die Cousine" }
+              ]
+            },
+            {
+              id: "comidas_bebidas",
+              name: "Comidas e Bebidas",
+              cards: [
+                { front: "a comida", back: "das Essen" },
+                { front: "o café da manhã", back: "das Frühstück" },
+                { front: "o almoço", back: "das Mittagessen" },
+                { front: "o jantar", back: "das Abendessen" },
+                { front: "o pão", back: "das Brot" },
+                { front: "o queijo", back: "der Käse" },
+                { front: "a linguiça", back: "die Wurst" },
+                { front: "a carne", back: "das Fleisch" },
+                { front: "os legumes", back: "das Gemüse" },
+                { front: "as frutas", back: "das Obst" },
+                { front: "a maçã", back: "der Apfel" },
+                { front: "a banana", back: "die Banane" },
+                { front: "a laranja", back: "die Orange" },
+                { front: "a batata", back: "die Kartoffel" },
+                { front: "o arroz", back: "der Reis" },
+                { front: "a água", back: "das Wasser" },
+                { front: "o café", back: "der Kaffee" },
+                { front: "o chá", back: "der Tee" },
+                { front: "o leite", back: "die Milch" },
+                { front: "o suco", back: "der Saft" },
+                { front: "a cerveja", back: "das Bier" },
+                { front: "o vinho", back: "der Wein" }
+              ]
+            },
+            {
+              id: "cores",
+              name: "Cores",
+              cards: [
+                { front: "vermelho", back: "rot" },
+                { front: "azul", back: "blau" },
+                { front: "amarelo", back: "gelb" },
+                { front: "verde", back: "grün" },
+                { front: "preto", back: "schwarz" },
+                { front: "branco", back: "weiß" },
+                { front: "cinza", back: "grau" },
+                { front: "marrom", back: "braun" },
+                { front: "laranja", back: "orange" },
+                { front: "roxo", back: "lila / violett" },
+                { front: "rosa", back: "rosa / pink" }
+              ]
+            },
+            {
+              id: "dias_semana",
+              name: "Dias da Semana",
+              cards: [
+                { front: "segunda-feira", back: "Montag" },
+                { front: "terça-feira", back: "Dienstag" },
+                { front: "quarta-feira", back: "Mittwoch" },
+                { front: "quinta-feira", back: "Donnerstag" },
+                { front: "sexta-feira", back: "Freitag" },
+                { front: "sábado", back: "Samstag / Sonnabend" },
+                { front: "domingo", back: "Sonntag" }
+              ]
+            },
+            {
+              id: "meses",
+              name: "Meses",
+              cards: [
+                { front: "janeiro", back: "Januar" },
+                { front: "fevereiro", back: "Februar" },
+                { front: "março", back: "März" },
+                { front: "abril", back: "April" },
+                { front: "maio", back: "Mai" },
+                { front: "junho", back: "Juni" },
+                { front: "julho", back: "Juli" },
+                { front: "agosto", back: "August" },
+                { front: "setembro", back: "September" },
+                { front: "outubro", back: "Oktober" },
+                { front: "novembro", back: "November" },
+                { front: "dezembro", back: "Dezember" }
+              ]
+            },
+            {
+              id: "tempo_clima",
+              name: "Tempo e Clima",
+              cards: [
+                { front: "Está quente", back: "Es ist warm" },
+                { front: "Está frio", back: "Es ist kalt" },
+                { front: "Está chovendo", back: "Es regnet" },
+                { front: "Está nevando", back: "Es schneit" },
+                { front: "O sol está brilhando", back: "Die Sonne scheint" },
+                { front: "Está nublado", back: "Es ist bewölkt" },
+                { front: "a primavera", back: "der Frühling" },
+                { front: "o verão", back: "der Sommer" },
+                { front: "o outono", back: "der Herbst" },
+                { front: "o inverno", back: "der Winter" }
+              ]
+            },
+            {
+              id: "lugares_direcoes",
+              name: "Lugares e Direções",
+              cards: [
+                { front: "a cidade", back: "die Stadt" },
+                { front: "a vila", back: "das Dorf" },
+                { front: "a rua", back: "die Straße" },
+                { front: "a praça", back: "der Platz" },
+                { front: "à esquerda", back: "links" },
+                { front: "à direita", back: "rechts" },
+                { front: "em frente", back: "geradeaus" },
+                { front: "a estação de trem", back: "der Bahnhof" },
+                { front: "o metrô", back: "die U-Bahn" },
+                { front: "o ônibus", back: "der Bus" },
+                { front: "o táxi", back: "das Taxi" },
+                { front: "o hotel", back: "das Hotel" },
+                { front: "o restaurante", back: "das Restaurant" },
+                { front: "o café", back: "das Café" },
+                { front: "o supermercado", back: "der Supermarkt" },
+                { front: "a farmácia", back: "die Apotheke" },
+                { front: "o hospital", back: "das Krankenhaus" },
+                { front: "o banco", back: "die Bank" },
+                { front: "o correio", back: "die Post" },
+                { front: "Onde está...?", back: "Wo ist...?" },
+                { front: "Como chego a...?", back: "Wie komme ich zu...?" }
+              ]
+            },
+            {
+              id: "adjetivos",
+              name: "Adjetivos Comuns",
+              cards: [
+                { front: "grande", back: "groß" },
+                { front: "pequeno", back: "klein" },
+                { front: "bom", back: "gut" },
+                { front: "ruim", back: "schlecht" },
+                { front: "bonito", back: "schön" },
+                { front: "feio", back: "hässlich" },
+                { front: "novo", back: "neu" },
+                { front: "velho/antigo", back: "alt" },
+                { front: "quente", back: "heiß" },
+                { front: "frio", back: "kalt" },
+                { front: "caro", back: "teuer" },
+                { front: "barato", back: "billig" },
+                { front: "leve/fácil", back: "leicht" },
+                { front: "pesado/difícil", back: "schwer" },
+                { front: "alto/barulhento", back: "laut" },
+                { front: "baixo/silencioso", back: "leise" },
+                { front: "rápido", back: "schnell" },
+                { front: "lento", back: "langsam" }
+              ]
+            },
+            {
+              id: "verbos_essenciais",
+              name: "Verbos Essenciais",
+              cards: [
+                { front: "ser/estar", back: "sein" },
+                { front: "ter", back: "haben" },
+                { front: "ir/andar", back: "gehen" },
+                { front: "vir", back: "kommen" },
+                { front: "fazer", back: "machen" },
+                { front: "dizer", back: "sagen" },
+                { front: "falar", back: "sprechen" },
+                { front: "ouvir", back: "hören" },
+                { front: "ver", back: "sehen" },
+                { front: "comer", back: "essen" },
+                { front: "beber", back: "trinken" },
+                { front: "dormir", back: "schlafen" },
+                { front: "morar", back: "wohnen" },
+                { front: "trabalhar", back: "arbeiten" },
+                { front: "aprender", back: "lernen" },
+                { front: "ler", back: "lesen" },
+                { front: "escrever", back: "schreiben" },
+                { front: "comprar", back: "kaufen" },
+                { front: "pagar", back: "bezahlen" },
+                { front: "perguntar", back: "fragen" },
+                { front: "responder", back: "antworten" },
+                { front: "ajudar", back: "helfen" },
+                { front: "amar", back: "lieben" },
+                { front: "gostar", back: "mögen" },
+                { front: "precisar", back: "brauchen" }
+              ]
+            },
+            {
+              id: "emergencia",
+              name: "Situações de Emergência",
+              cards: [
+                { front: "Socorro!", back: "Hilfe!" },
+                { front: "Preciso de um médico", back: "Ich brauche einen Arzt" },
+                { front: "Por favor, chame uma ambulância", back: "Rufen Sie bitte einen Krankenwagen" },
+                { front: "Estou perdido", back: "Ich habe mich verlaufen" },
+                { front: "Não falo alemão", back: "Ich spreche kein Deutsch" }
+              ]
+            },
+            {
+              id: "frases_praticas",
+              name: "Frases Práticas",
+              cards: [
+                { front: "Eu sou brasileiro/brasileira", back: "Ich bin Brasilianer/Brasilianerin" },
+                { front: "Eu tenho 25 anos", back: "Ich bin 25 Jahre alt" },
+                { front: "Eu moro no Brasil", back: "Ich wohne in Brasilien" },
+                { front: "Eu falo português", back: "Ich spreche Portugiesisch" },
+                { front: "Eu estou aprendendo alemão", back: "Ich lerne Deutsch" },
+                { front: "Eu gostaria de pedir", back: "Ich möchte bestellen" },
+                { front: "O cardápio, por favor", back: "Die Speisekarte, bitte" },
+                { front: "A conta, por favor", back: "Die Rechnung, bitte" },
+                { front: "Que horas são?", back: "Wie spät ist es? / Wie viel Uhr ist es?" },
+                { front: "São... horas", back: "Es ist... Uhr" }
+              ]
+            }
+          ]
+        };
+        
+        // Elementos do DOM
+        const categorySelect = document.getElementById('category-select');
+        const flashcard = document.getElementById('flashcard');
+        const frontContent = document.getElementById('front-content');
+        const backContent = document.getElementById('back-content');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const cardCounter = document.getElementById('card-counter');
+        const studyModeBtn = document.getElementById('study-mode-btn');
+        const quizModeBtn = document.getElementById('quiz-mode-btn');
+        const quizMode = document.getElementById('quiz-mode');
+        const quizQuestion = document.getElementById('quiz-question');
+        const quizAnswer = document.getElementById('quiz-answer');
+        const checkAnswerBtn = document.getElementById('check-answer-btn');
+        const feedback = document.getElementById('feedback');
+        const results = document.getElementById('results');
+        const scorePercentage = document.getElementById('score-percentage');
+        const scoreText = document.getElementById('score-text');
+        const reviewBtn = document.getElementById('review-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        
+        // Estado da aplicação
+        let currentCategory = null;
+        let currentCardIndex = 0;
+        let isStudyMode = true;
+        let score = 0;
+        let wrongCards = [];
+        
+        // Inicialização
+        function init() {
+            populateCategorySelect();
+            setupEventListeners();
+        }
+        
+        // Preencher o select de categorias
+        function populateCategorySelect() {
+            flashcardsData.categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = `${category.name} (${category.cards.length} cartões)`;
+                categorySelect.appendChild(option);
+            });
+        }
+        
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Seleção de categoria
+            categorySelect.addEventListener('change', handleCategoryChange);
+            
+            // Virar flashcard
+            flashcard.addEventListener('click', () => {
+                if (isStudyMode && currentCategory) {
+                    flashcard.classList.toggle('flipped');
+                }
+            });
+            
+            // Navegação
+            prevBtn.addEventListener('click', showPreviousCard);
+            nextBtn.addEventListener('click', showNextCard);
+            
+            // Modos
+            studyModeBtn.addEventListener('click', enableStudyMode);
+            quizModeBtn.addEventListener('click', enableQuizMode);
+            
+            // Quiz
+            checkAnswerBtn.addEventListener('click', checkAnswer);
+            quizAnswer.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    checkAnswer();
+                }
+            });
+            
+            // Resultados
+            reviewBtn.addEventListener('click', reviewWrongCards);
+            restartBtn.addEventListener('click', restartQuiz);
+        }
+        
+        // Manipulador de mudança de categoria
+        function handleCategoryChange() {
+            const categoryId = categorySelect.value;
+            
+            if (categoryId) {
+                currentCategory = flashcardsData.categories.find(cat => cat.id === categoryId);
+                currentCardIndex = 0;
+                score = 0;
+                wrongCards = [];
+                
+                enableStudyMode();
+                updateCardDisplay();
+                updateProgressBar();
+                
+                studyModeBtn.disabled = false;
+                quizModeBtn.disabled = false;
+                prevBtn.disabled = true;
+                nextBtn.disabled = false;
+            } else {
+                currentCategory = null;
+                frontContent.textContent = 'Selecione uma categoria para começar';
+                backContent.textContent = '';
+                cardCounter.textContent = '';
+                progressBar.style.width = '0%';
+                
+                studyModeBtn.disabled = true;
+                quizModeBtn.disabled = true;
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
+            }
+        }
+        
+        // Atualizar exibição do cartão
+        function updateCardDisplay() {
+            if (!currentCategory) return;
+            
+            const card = currentCategory.cards[currentCardIndex];
+            
+            if (isStudyMode) {
+                frontContent.textContent = card.front;
+                backContent.textContent = card.back;
+                flashcard.classList.remove('flipped');
+                
+                cardCounter.textContent = `Cartão ${currentCardIndex + 1} de ${currentCategory.cards.length}`;
+            } else {
+                quizQuestion.textContent = card.front;
+                quizAnswer.value = '';
+                feedback.textContent = '';
+                feedback.className = 'feedback';
+                
+                cardCounter.textContent = `Pergunta ${currentCardIndex + 1} de ${currentCategory.cards.length}`;
+            }
+            
+            prevBtn.disabled = currentCardIndex === 0;
+            nextBtn.disabled = !isStudyMode;
+        }
+        
+        // Atualizar barra de progresso
+        function updateProgressBar() {
+            if (!currentCategory) return;
+            
+            const progress = ((currentCardIndex + 1) / currentCategory.cards.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+        
+        // Mostrar cartão anterior
+        function showPreviousCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                updateCardDisplay();
+                updateProgressBar();
+            }
+        }
+        
+        // Mostrar próximo cartão
+        function showNextCard() {
+            if (currentCardIndex < currentCategory.cards.length - 1) {
+                currentCardIndex++;
+                updateCardDisplay();
+                updateProgressBar();
+            } else if (isStudyMode) {
+                // Voltar ao início quando chegar ao fim no modo estudo
+                currentCardIndex = 0;
+                updateCardDisplay();
+                updateProgressBar();
+            }
+        }
+        
+        // Ativar modo estudo
+        function enableStudyMode() {
+            isStudyMode = true;
+            
+            flashcard.style.display = 'block';
+            quizMode.style.display = 'none';
+            results.style.display = 'none';
+            
+            studyModeBtn.disabled = true;
+            quizModeBtn.disabled = false;
+            nextBtn.disabled = false;
+            
+            updateCardDisplay();
+        }
+        
+        // Ativar modo quiz
+        function enableQuizMode() {
+            isStudyMode = false;
+            currentCardIndex = 0;
+            score = 0;
+            wrongCards = [];
+            
+            flashcard.style.display = 'none';
+            quizMode.style.display = 'flex';
+            results.style.display = 'none';
+            
+            studyModeBtn.disabled = false;
+            quizModeBtn.disabled = true;
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+            
+            updateCardDisplay();
+            updateProgressBar();
+        }
+        
+        // Verificar resposta do quiz
+        function checkAnswer() {
+            if (!currentCategory) return;
+            
+            const card = currentCategory.cards[currentCardIndex];
+            const userAnswer = quizAnswer.value.trim().toLowerCase();
+            const correctAnswer = card.back.toLowerCase();
+            
+            const isCorrect = userAnswer === correctAnswer;
+            
+            if (isCorrect) {
+                feedback.textContent = 'Correto!';
+                feedback.className = 'feedback correct';
+                score++;
+            } else {
+                feedback.textContent = `Incorreto. A resposta correta é: ${card.back}`;
+                feedback.className = 'feedback incorrect';
+                wrongCards.push(card);
+            }
+            
+            quizAnswer.disabled = true;
+            checkAnswerBtn.textContent = 'Próximo';
+            
+            checkAnswerBtn.removeEventListener('click', checkAnswer);
+            checkAnswerBtn.addEventListener('click', nextQuizQuestion);
+        }
+        
+        // Ir para próxima pergunta do quiz
+        function nextQuizQuestion() {
+            if (currentCardIndex < currentCategory.cards.length - 1) {
+                currentCardIndex++;
+                updateCardDisplay();
+                updateProgressBar();
+                
+                quizAnswer.disabled = false;
+                checkAnswerBtn.textContent = 'Verificar';
+                
+                checkAnswerBtn.removeEventListener('click', nextQuizQuestion);
+                checkAnswerBtn.addEventListener('click', checkAnswer);
+            } else {
+                showResults();
+            }
+        }
+        
+        // Mostrar resultados do quiz
+        function showResults() {
+            const totalCards = currentCategory.cards.length;
+            const percentage = Math.round((score / totalCards) * 100);
+            
+            scorePercentage.textContent = `${percentage}%`;
+            scoreText.textContent = `Você acertou ${score} de ${totalCards} cartões`;
+            
+            flashcard.style.display = 'none';
+            quizMode.style.display = 'none';
+            results.style.display = 'block';
+            
+            reviewBtn.disabled = wrongCards.length === 0;
+        }
+        
+        // Revisar cartões errados
+        function reviewWrongCards() {
+            if (wrongCards.length === 0) return;
+            
+            const reviewCategory = {
+                id: 'review',
+                name: 'Revisão',
+                cards: wrongCards
+            };
+            
+            currentCategory = reviewCategory;
+            currentCardIndex = 0;
+            
+            enableStudyMode();
+            updateCardDisplay();
+            updateProgressBar();
+        }
+        
+        // Reiniciar quiz
+        function restartQuiz() {
+            currentCardIndex = 0;
+            score = 0;
+            wrongCards = [];
+            
+            enableQuizMode();
+        }
+        
+        // Iniciar aplicação
+        init();
+    </script>
+</body>
+</html>
